@@ -1,0 +1,8 @@
+version: "3"
+services:
+  dataservice:
+    image: vividbreeze/docker-tutorial:version1
+    deploy:
+      replicas: 3
+    ports:
+      - "4000:8080"

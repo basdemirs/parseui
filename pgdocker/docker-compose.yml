@@ -1,0 +1,94 @@
+---
+version: "3.7"
+
+services:
+  primary:
+    restart: unless-stopped
+    hostname: 'primary'
+    image: crunchydata/crunchy-postgres:centos7-10.8-2.4.0
+    environment:
+    - PGHOST=/tmp
+    - MAX_CONNECTIONS=10
+    - MAX_WAL_SENDERS=5
+    - PG_MODE=primary
+    - PG_PRIMARY_USER=primaryuser
+    - PG_PRIMARY_PASSWORD=password
+    - PG_DATABASE=testdb
+    - PG_USER=testuser
+    - PG_PASSWORD=password
+    - PG_ROOT_PASSWORD=password
+    - PG_PRIMARY_PORT=5432
+    volumes:
+    - pg-primary-vol:/pgdata
+    ports:
+    - "5432:5432"
+    networks:
+    - pgnetwork
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    # deploy:
+    #   placement:
+    #     constraints:
+    #     - node.labels.type == primary
+    #     - node.role == worker
+  replica:
+    restart: unless-stopped
+    image: crunchydata/crunchy-postgres:centos7-10.8-2.4.0
+    environment:
+    - PGHOST=/tmp
+    - MAX_CONNECTIONS=10
+    - MAX_WAL_SENDERS=5
+    - PG_MODE=replica
+    - PG_PRIMARY_HOST=primary
+    - PG_PRIMARY_PORT=5432
+    - PG_PRIMARY_USER=primaryuser
+    - PG_PRIMARY_PASSWORD=password
+    - PG_DATABASE=testdb
+    - PG_USER=testuser
+    - PG_PASSWORD=password
+    - PG_ROOT_PASSWORD=password
+    volumes:
+    - pg-replica-vol:/pgdata
+    ports:
+    - "5432"
+    networks:
+    - pgnetwork
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    #   placement:
+    #     constraints:
+    #     - node.labels.type != primary
+    #     - node.role == worker
+  pgadmin4:
+    restart: unless-stopped
+    hostname: 'pgadmin4'
+    image: crunchydata/crunchy-pgadmin4:centos7-10.4-2.0.0
+    environment:
+    - PGADMIN_SETUP_EMAIL=admin@admin.com
+    - PGADMIN_SETUP_PASSWORD=password
+    - SERVER_PORT=5050
+    volumes:
+    - pg-admin4-vol:/var/lib/pgadmin
+    ports:
+    - "5050:5050"
+    networks:
+    - pgnetwork
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure    
+    # deploy:
+    #   placement:
+    #     constraints:
+    #     - node.labels.type == pga4
+networks:
+  pgnetwork:
+
+volumes:
+  pg-primary-vol:
+  pg-replica-vol:
+  pg-admin4-vol:

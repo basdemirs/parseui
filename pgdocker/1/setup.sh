@@ -3,7 +3,8 @@
 mkdir _postgres
 cd _postgres
 #IMAGE_TAG=centos7-11.3-2.4.0
-IMAGE_TAG=centos7-10.8-2.4.0
+#IMAGE_TAG=centos7-10.8-2.4.0
+IMAGE_TAG=centos7-10.4-2.0.0
 
 docker volume create --driver local --name=pgvolume
 docker volume create --driver local --name=pgsshd
